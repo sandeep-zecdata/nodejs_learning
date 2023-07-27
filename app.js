@@ -7,22 +7,31 @@ const path = require('path');
 const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+
+// const connectDB = require("./database/db")
+
 // myevent.on("test",(data)=>{
 //     console.log("test event ",data);
 // })
 
-app.get("/",(req,res)=>{
+app.get("/", (req, res) => {
     // myevent.emit("test","name");
     // res.send("hello world");
     // console.log(__dirname)
-    res.sendFile(path.join(__dirname,"./index.html"));
+    res.sendFile(path.join(__dirname, "./index.html"));
 })
 app.use(routes);
 
-app.all('/*',(req,res)=>{
+app.all('/*', (req, res) => {
     res.send("Page Not Found");
 })
 
 app.listen(3000,()=>{
     console.log("server running on http://localhost:3000");
 })
+
+// connectDB().then(() => {
+//     app.listen(3000, () => {
+//         console.log("server running on http://localhost:3000");
+//     })
+// })

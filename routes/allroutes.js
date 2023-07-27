@@ -1,37 +1,22 @@
 const express = require("express");
-const router = express.Router();
+const BookRouter = express.Router();
 const connect = require('../database/db');
+const { ObjectId } = require('mongodb');
+const BookController = require('../Controllers/Bookscontroller')
 
-router.get("/books", async (req,res)=>{
-    const db = await connect();
-    const books = await db.collection("book").find().toArray();
-    // res.send("All books");
-    res.json(books);
-})
+//post book
+BookRouter.post("/book", BookController.postBook)
 
-router.get("/books/:id",(req,res)=>{
-    res.send(`book with id ${req.params.id}`);
-})
 
-router.post("/book",async (req,res)=>{
-    const db = await connect();
-//   const data = {
-//     bookname: "Expressjs",
-//     author: "unknown",
-//   }
-   await db.collection('book').insertOne(req.body);
-res.json({data:"book is stored"});
+//get all books api
+BookRouter
+.route()
+    .get("/books", BookController.getallBooks)
 
-// console.log(req.body);
-//     res.json(req.body);
-})
+    .get("/book/:id", BookController.getsingleBook)  //get book by id
 
-router.patch("/books/:id",(req,res)=>{
-    res.send(`patch book id ${req.params.id}`);
-})
+    .patch("/book/:id", BookController.updateBook)  //update book by id
 
-router.delete("/books/:id",(req,res)=>{
-    res.send(`delete book id ${req.params.id}`);
-})
+    .delete("/book/:id", BookController.deleteBook)  //delete book
 
 module.exports = router;
