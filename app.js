@@ -1,37 +1,57 @@
 const express = require("express");
+const path = require("path");
+var bodyParser = require('body-parser')
+const bookController = require("./Controllers/Bookscontroller");
+const authController = require("./Controllers/Authcontroller");
 const app = express();
-const EventEmitter = require("events");
-const myevent = new EventEmitter();
-const routes = require("./routes/allroutes")
-const path = require('path');
-const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+const connectDB = require("./database/db")
+const test = require('./middleware/test')
+const axios = require('axios');
 
-// const connectDB = require("./database/db")
 
-// myevent.on("test",(data)=>{
-//     console.log("test event ",data);
-// })
+
 
 app.get("/", (req, res) => {
-    // myevent.emit("test","name");
-    // res.send("hello world");
-    // console.log(__dirname)
+
     res.sendFile(path.join(__dirname, "./index.html"));
+    // res.json({data:"TO-dos-app"});
 })
-app.use(routes);
+
+app.get("/axios", (req,res) => {
+     axios.get("http://localhost:3000/books").then(function(res){
+        res.send(res);
+        }).catch(function(error){
+            res.send(error);
+    })
+})
+
+app.post("/signup", authController.signup);
+app.post("/login", authController.login);
+app.get("/books", bookController.getallBooks)
+
+// app.use(test);
+app.post("/book", bookController.postBook);
+
+
+app.get("/book/:id", bookController.getsingleBook)
+
+app.patch("/book/:id", bookController.updateBook)
+
+app.delete("/book/:id", bookController.deleteBook)
+
 
 app.all('/*', (req, res) => {
     res.send("Page Not Found");
 })
 
-app.listen(3000,()=>{
-    console.log("server running on http://localhost:3000");
+connectDB().then(() => {
+
+    module.exports =  app.listen(3000, () => {
+        console.log("server running on http://localhost:3000");
+    })
 })
 
-// connectDB().then(() => {
-//     app.listen(3000, () => {
-//         console.log("server running on http://localhost:3000");
-//     })
-// })
+
+
