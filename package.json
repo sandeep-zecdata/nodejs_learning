@@ -4,7 +4,8 @@
   "description": "",
   "main": "circle.js",
   "scripts": {
-    "test": "mocha --recursive --exit",
+    "test": "mocha test/test.js",
+    "test2": "mocha test/test2.js",
     "dev": "nodemon app.js",
     "start":"NODE_ENV=example node index.js"
   },

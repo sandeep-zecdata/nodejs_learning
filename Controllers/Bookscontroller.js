@@ -2,23 +2,42 @@
 const { ObjectId } = require('mongodb');
 const Book = require("../models/book");
 const axios = require('axios');
+const Joi = require('joi');
 
 exports.postBook = async (req, res) => {
+    const bookSchema = Joi.object({
+        title: Joi.string().min(10).required(),
+        author: Joi.string().required()
+    });
 
-    const { title, author } = req.body
+    const { error, value } = bookSchema.validate(req.body);
 
-    const book = new Book({
-        title,
-        author
-    })
-    try {
-        await book.save();
-        res.send({ message: "book stored successfully " });
-    } catch (error) {
-        console.log(error, "444444444444444", error._message)
-        res.send(error._message);
+    if (error) {
+        return res.status(400).json({ message: error.details[0].message });
     }
-}
+
+    try {
+        // Check if a book with the same title already exists in the database
+        const existingBook = await Book.findOne({ title: value.title });
+
+        if (existingBook) {
+            return res.status(409).json({ message: "A book with the same title already exists." });
+        }
+
+        // If no matching title is found, save the new book
+        const book = new Book({
+            title: value.title,
+            author: value.author
+        });
+
+        await book.save();
+        res.status(201).json({ message: "Book stored successfully." });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "An error occurred while saving the book." });
+    }
+};
+
 
 exports.getallBooks = async (req, res) => {
     // axios.get("http://localhost:3000/books").then(function(res){
@@ -52,7 +71,7 @@ exports.updateBook = async (req, res) => {
 
     const _id = new ObjectId(req.params.id);
     await Book.updateOne({ _id }, { $set: req.body })
-    res.send("book is updated");
+    res.status(201).json({message:"book is updated"});
     // try {
     //     const _id = new ObjectId(req.params.id);
     //     const db = await connect();
@@ -69,9 +88,12 @@ exports.updateBook = async (req, res) => {
 
 exports.deleteBook = async (req, res) => {
     const _id = new ObjectId(req.params.id);
-    await Book.deleteOne({ _id })
-    res.send("book is deleted");
-
+    const deletedBook = await Book.deleteOne({ _id })
+    
+    if (deletedBook.deletedCount === 0) {
+        return res.status(404).json({ message: "Book not found" });
+    }
+    res.json({message:"book is deleted"})
     // try {
     //     const _id = new ObjectId(req.params.id);
     //     const db = await connect();
